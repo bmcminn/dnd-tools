@@ -25,6 +25,7 @@
                 <h3>2023-04-17</h3>
                 <ul>
                     <li>Bump app version to v0.2</li>
+                    <li>Add boat speed stats</li>
                     <li>Fix #3; add localStorage cache recall for last known values</li>
                     <li>Fix #2; update default travel speeds</li>
                     <li>Fix #2; add mechanic to factor in max travel hours per day</li>
@@ -36,7 +37,9 @@
                 </ul>
             </details>
 
-            Source repo: <a href="https://github.com/bmcminn/dnd-tools">https://github.com/bmcminn/dnd-tools</a>
+            <p class="text-center">
+                Source repo: <a href="https://github.com/bmcminn/dnd-tools">https://github.com/bmcminn/dnd-tools</a>
+            </p>
         </footer>
     </main>
 
@@ -185,6 +188,27 @@
                         <td class="text-end">{{ timeWagon.minutes }}</td>
                         <td class="text-end">{{ timeWagon.totalHours }}</td>
                     </tr>
+
+                    <tr>
+                        <td>Boat</td>
+                        <td>
+                            <label class="visually-hidden" for="avgBoatSpeed">Avg Boat Speed (mph):</label>
+                            <input type="number"
+                                @change="cache"
+                                name="avgBoatSpeed"
+                                id="avgBoatSpeed"
+                                min="0"
+                                step="0.5"
+                                v-model="avgBoatSpeed"
+                            >
+                        </td>
+                        <td class="text-end">{{ timeBoat.travelHours }}</td>
+                        <td class="text-end">{{ timeBoat.weeks }}</td>
+                        <td class="text-end">{{ timeBoat.days }}</td>
+                        <td class="text-end">{{ timeBoat.hours }}</td>
+                        <td class="text-end">{{ timeBoat.minutes }}</td>
+                        <td class="text-end">{{ timeBoat.totalHours }}</td>
+                    </tr>
                 </tbody>
 
             </table>
@@ -214,6 +238,7 @@
                     avgWalkingSpeed: 3,
                     avgRidingSpeed: 12,
                     avgWagonSpeed: 6,
+                    avgBoatSpeed: 7.5,
                 }
             },
 
@@ -241,6 +266,7 @@
                         avgWalkingSpeed: this.avgWalkingSpeed,
                         avgRidingSpeed: this.avgRidingSpeed,
                         avgWagonSpeed: this.avgWagonSpeed,
+                        avgBoatSpeed: this.avgBoatSpeed,
                     })
 
                     localStorage.setItem(this.storageKey, data)
@@ -256,6 +282,7 @@
                 timeWalking() { return this.calcTravelTime(this.avgWalkingSpeed) },
                 timeRiding() { return this.calcTravelTime(this.avgRidingSpeed) },
                 timeWagon() { return this.calcTravelTime(this.avgWagonSpeed) },
+                timeBoat() { return this.calcTravelTime(this.avgBoatSpeed) },
                 unsafeTravelHours() { return this.hoursPerDay > this.safeTravelHours },
             },
 
@@ -263,12 +290,12 @@
                 const data = this.readCache()
 
                 if (data) {
-                    this.distance           = data.distance
-                    this.hoursPerDay        = data.hoursPerDay
-                    this.avgWagonSpeed      = data.hoursPerDay
-                    this.avgWalkingSpeed    = data.avgWalkingSpeed
-                    this.avgRidingSpeed     = data.avgRidingSpeed
-                    this.avgWagonSpeed      = data.avgWagonSpeed
+                    this.distance           = data.distance ?? 100
+                    this.hoursPerDay        = data.hoursPerDay ?? 12
+                    this.avgWalkingSpeed    = data.avgWalkingSpeed ?? 3
+                    this.avgRidingSpeed     = data.avgRidingSpeed ?? 12
+                    this.avgWagonSpeed      = data.avgWagonSpeed ?? 6
+                    this.avgBoatSpeed       = data.avgBoatSpeed ?? 7.5
                 }
             },
 
