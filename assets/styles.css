@@ -40,3 +40,10 @@ tbody tr:nth-child(odd) {
     border-left: 0.2em solid #f90;
     padding: 0.5em;
 }
+
+main > footer {
+    margin-top: 3em;
+    font-size: 85%;
+    color: #666;
+    text-align: center;
+}

@@ -11,7 +11,18 @@
 </head>
 <body>
 
-    <main id="app"></main>
+    <main>
+        <header>
+            <a href="../">back</a>
+        </header>
+
+        <section id="app">></section>
+
+        <footer>
+            Source repo: <a href="https://github.com/bmcminn/dnd-tools">https://github.com/bmcminn/dnd-tools</a>
+        </footer>
+    </main>
+
 
     <template id="main">
         <h1>DnD Distance Calculator v{{version}}</h1>
@@ -165,7 +176,7 @@
                 timeWagon() { return calcTravelTime(this.distance, this.avgWagonSpeed) },
             },
 
-        }).mount('main#app')
+        }).mount('#app')
 
 
         function calcTravelTime(distance, mph) {
