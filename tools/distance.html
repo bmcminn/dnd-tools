@@ -40,6 +40,7 @@
             <div class="form-control">
                 <label for="distance">Distance (miles):</label>
                 <input type="number"
+                    @change="cache"
                     id="distance"
                     name="distance"
                     min="0"
@@ -50,6 +51,7 @@
             <div class="form-control">
                 <label for="hoursPerDay">Daily travel hours:</label>
                 <input type="number"
+                    @change="cache"
                     id="hoursPerDay"
                     name="hoursPerDay"
                     min="0"
@@ -109,6 +111,7 @@
                         <td>
                             <label class="visually-hidden" for="avgWalkingSpeed">Avg Walking Speed (mph):</label>
                             <input type="number"
+                                @change="cache"
                                 name="avgWalkingSpeed"
                                 id="avgWalkingSpeed"
                                 min="0"
@@ -129,6 +132,7 @@
                         <td>
                             <label class="visually-hidden" for="avgRidingSpeed">Avg Horseback Speed (mph):</label>
                             <input type="number"
+                                @change="cache"
                                 name="avgRidingSpeed"
                                 id="avgRidingSpeed"
                                 min="0"
@@ -149,6 +153,7 @@
                         <td>
                             <label class="visually-hidden" for="avgWagonSpeed">Avg Wagon Speed (mph):</label>
                             <input type="number"
+                                @change="cache"
                                 name="avgWagonSpeed"
                                 id="avgWagonSpeed"
                                 min="0"
@@ -185,6 +190,7 @@
             data() {
                 return {
                     version: '0.2',
+                    storageKey: 'dndDistanceState',
                     distance: 100,
                     hoursPerDay: 8,
                     safeTravelHours: 12,
@@ -210,6 +216,23 @@
                     }
                 },
 
+                cache() {
+                    const data = JSON.stringify({
+                        distance: this.distance,
+                        hoursPerDay: this.hoursPerDay,
+
+                        avgWalkingSpeed: this.avgWalkingSpeed,
+                        avgRidingSpeed: this.avgRidingSpeed,
+                        avgWagonSpeed: this.avgWagonSpeed,
+                    })
+
+                    localStorage.setItem(this.storageKey, data)
+                },
+
+                readCache() {
+                    return JSON.parse(localStorage.getItem(this.storageKey))
+                },
+
             },
 
             computed: {
@@ -217,6 +240,19 @@
                 timeRiding() { return this.calcTravelTime(this.avgRidingSpeed) },
                 timeWagon() { return this.calcTravelTime(this.avgWagonSpeed) },
                 unsafeTravelHours() { return this.hoursPerDay > this.safeTravelHours },
+            },
+
+            mounted() {
+                const data = this.readCache()
+
+                if (data) {
+                    this.distance           = data.distance
+                    this.hoursPerDay        = data.hoursPerDay
+                    this.avgWagonSpeed      = data.hoursPerDay
+                    this.avgWalkingSpeed    = data.avgWalkingSpeed
+                    this.avgRidingSpeed     = data.avgRidingSpeed
+                    this.avgWagonSpeed      = data.avgWagonSpeed
+                }
             },
 
         }).mount('#app')
