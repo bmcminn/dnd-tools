@@ -28,7 +28,7 @@
         <h1>DnD Distance Calculator v{{version}}</h1>
 
         <p class="description">
-            Converts miles to time for various modes of conveyance.
+            Converts miles to time for various modes of conveyance factoring in the max number of hours traveled per day.
         </p>
 
 
@@ -37,13 +37,26 @@
 
         <div>
 
-            <div>
+            <div class="form-control">
                 <label for="distance">Distance (miles):</label>
                 <input type="number"
+                    id="distance"
                     name="distance"
                     min="0"
                     v-model="distance"
                 >
+            </div>
+
+            <div class="form-control">
+                <label for="hoursPerDay">Daily travel hours:</label>
+                <input type="number"
+                    id="hoursPerDay"
+                    name="hoursPerDay"
+                    min="0"
+                    max="24"
+                    v-model="hoursPerDay"
+                >
+                <span v-if="unsafeTravelHours" class="danger-icon" :title="`Traveling for ${hoursPerDay} hours per day is dangerous`">!</span>
             </div>
 
             <!--
@@ -80,13 +93,14 @@
 
             <table>
                 <thead>
-                    <th style="width: 15%; min-width: 5em">Conveyance</th>
-                    <th style="width: 15%; min-width: 5em">Avg Speed (MPH)</th>
-                    <th style="width: 15%; min-width: 5em">Weeks</th>
-                    <th style="width: 15%; min-width: 5em">Days</th>
-                    <th style="width: 15%; min-width: 5em">Hours</th>
-                    <th style="width: 15%; min-width: 5em">Minutes</th>
-                    <th style="width: 15%; min-width: 5em">Total hours</th>
+                    <th style="min-width: 5em">Conveyance</th>
+                    <th style="min-width: 5em">Avg <abbr title="miles per hour">MPH</abbr></th>
+                    <th style="min-width: 5em">Travel hrs</th>
+                    <th style="min-width: 5em">Weeks</th>
+                    <th style="min-width: 5em">Days</th>
+                    <th style="min-width: 5em">Hours</th>
+                    <th style="min-width: 5em">Minutes</th>
+                    <th style="min-width: 5em">Total hrs</th>
                 </thead>
 
                 <tbody>
@@ -96,11 +110,13 @@
                             <label class="visually-hidden" for="avgWalkingSpeed">Avg Walking Speed (mph):</label>
                             <input type="number"
                                 name="avgWalkingSpeed"
+                                id="avgWalkingSpeed"
                                 min="0"
                                 step="0.5"
                                 v-model="avgWalkingSpeed"
                             >
                         </td>
+                        <td class="text-end">{{ timeWalking.travelHours }}</td>
                         <td class="text-end">{{ timeWalking.weeks }}</td>
                         <td class="text-end">{{ timeWalking.days }}</td>
                         <td class="text-end">{{ timeWalking.hours }}</td>
@@ -114,11 +130,13 @@
                             <label class="visually-hidden" for="avgRidingSpeed">Avg Horseback Speed (mph):</label>
                             <input type="number"
                                 name="avgRidingSpeed"
+                                id="avgRidingSpeed"
                                 min="0"
                                 step="0.5"
                                 v-model="avgRidingSpeed"
                             >
                         </td>
+                        <td class="text-end">{{ timeRiding.travelHours }}</td>
                         <td class="text-end">{{ timeRiding.weeks }}</td>
                         <td class="text-end">{{ timeRiding.days }}</td>
                         <td class="text-end">{{ timeRiding.hours }}</td>
@@ -132,11 +150,13 @@
                             <label class="visually-hidden" for="avgWagonSpeed">Avg Wagon Speed (mph):</label>
                             <input type="number"
                                 name="avgWagonSpeed"
+                                id="avgWagonSpeed"
                                 min="0"
                                 step="0.5"
                                 v-model="avgWagonSpeed"
                             >
                         </td>
+                        <td class="text-end">{{ timeWagon.travelHours }}</td>
                         <td class="text-end">{{ timeWagon.weeks }}</td>
                         <td class="text-end">{{ timeWagon.days }}</td>
                         <td class="text-end">{{ timeWagon.hours }}</td>
@@ -153,44 +173,54 @@
 
 
     <script type="module">
-        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js?cache=123456789'
 
         createApp({
+
+            components: {
+            },
 
             template: document.querySelector('template#main').innerHTML.trim(),
 
             data() {
                 return {
-                    count: 0,
-                    version: '0.1',
-                    distance: 0,
-                    avgWalkingSpeed: 5,
-                    avgRidingSpeed: 20,
-                    avgWagonSpeed: 12.5,
+                    version: '0.2',
+                    distance: 100,
+                    hoursPerDay: 8,
+                    safeTravelHours: 12,
+                    avgWalkingSpeed: 3,
+                    avgRidingSpeed: 12,
+                    avgWagonSpeed: 6,
                 }
             },
 
+            methods: {
+
+                calcTravelTime(mph) {
+                    const travelHours = this.distance / mph // * (1 + (this.hoursPerDay / 24))
+                    const totalHours = travelHours * (24 / this.hoursPerDay)
+
+                    return {
+                        weeks:      Math.floor(totalHours / (24 * 7)),
+                        days:       Math.floor((totalHours / 24) % 7),
+                        hours:      Math.floor(totalHours % 24),
+                        minutes:    Math.floor(totalHours % 1 * 60),
+                        totalHours: totalHours.toFixed(2),
+                        travelHours: travelHours.toFixed(2),
+                    }
+                },
+
+            },
+
             computed: {
-                timeWalking() { return calcTravelTime(this.distance, this.avgWalkingSpeed) },
-                timeRiding() { return calcTravelTime(this.distance, this.avgRidingSpeed) },
-                timeWagon() { return calcTravelTime(this.distance, this.avgWagonSpeed) },
+                timeWalking() { return this.calcTravelTime(this.avgWalkingSpeed) },
+                timeRiding() { return this.calcTravelTime(this.avgRidingSpeed) },
+                timeWagon() { return this.calcTravelTime(this.avgWagonSpeed) },
+                unsafeTravelHours() { return this.hoursPerDay > this.safeTravelHours },
             },
 
         }).mount('#app')
 
-
-        function calcTravelTime(distance, mph) {
-
-            const totalHours = distance / mph
-
-            return {
-                weeks:      Math.floor(totalHours / (24 * 7)),
-                days:       Math.floor((totalHours / 24) % 7),
-                hours:      Math.floor(totalHours % 24),
-                minutes:    Math.floor(totalHours % 1 * 60),
-                totalHours: totalHours.toFixed(2),
-            }
-        }
     </script>
 
 </body>
