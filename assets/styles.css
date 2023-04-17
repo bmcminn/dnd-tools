@@ -1,0 +1,42 @@
+main {
+    padding: 1em;
+}
+
+.visually-hidden {
+    clip: 0;
+    width: 0;
+    height: 0;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+
+hr {
+    color: #e3e3e3;
+    border: 1px solid #e3e3e3;
+    margin: 1em 0;
+}
+
+thead  { font-weight: bold }
+
+td input { width: 90% }
+
+.text-end { text-align: end }
+.text-start { text-align: start }
+.text-center { text-align: center }
+
+th, td {
+    padding: 0.25em 0.5em;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #e3e3e3;
+}
+
+
+.description {
+/*    border-block-start: 0.2em solid #f90;*/
+/*    padding-block-start: 0.5em;*/
+    border-left: 0.2em solid #f90;
+    padding: 0.5em;
+}
