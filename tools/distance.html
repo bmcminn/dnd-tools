@@ -21,7 +21,7 @@
             <a href="../">back</a>
         </header>
 
-        <section id="app">></section>
+        <section id="app"></section>
 
         <footer>
             <details class="text-start" id="changelog">
@@ -134,7 +134,6 @@
             </table>
 
         </div>
-
     </template>
 
 
@@ -171,13 +170,12 @@
 
             <td><button @click="triggerRemove" aria-label="Remove item">&times;</button></td>
         </tr>
-
     </template>
 
 
     <script type="module">
         // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
-        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
 
         const BASE_ENTRIES = [
             { key: 1111111, label: 'Walking', avgSpeed: 3 },
@@ -353,7 +351,6 @@
             timer = setTimeout(() => { callback.apply(this, args); }, timeout);
           };
         }
-
     </script>
 
 </body>
