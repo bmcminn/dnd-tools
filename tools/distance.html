@@ -186,66 +186,7 @@
             { key: 1111000, label: 'Boat', avgSpeed: 7.5 },
         ]
 
-        const ConveyanceComponent = {
-
-            template: getTemplate('template#conveyance'), // document.querySelector
-
-            data() {
-                return {
-
-                }
-            },
-
-            props: {
-                item: Object,
-                distance: Number,
-                hoursPerDay: Number,
-            },
-
-            methods: {
-
-                triggerRemove() {
-                    this.$emit('remove', this.item)
-                },
-
-                triggerUpdate() {
-                    this.$emit('update')
-                },
-
-                calcTravelTime() {
-
-                    const avgSpeed      = Number(this.item.avgSpeed)
-                    const hoursPerDay   = Number(this.hoursPerDay)
-                    const distance      = Number(this.distance)
-
-                    const travelHours   = distance / avgSpeed // * (1 + (hoursPerDay / 24))
-                    const totalHours    = travelHours * (24 / hoursPerDay)
-
-                    const data = {
-                        weeks:      Math.floor(totalHours / (24 * 7)),
-                        days:       Math.floor((totalHours / 24) % 7),
-                        hours:      Math.floor(totalHours % 24),
-                        minutes:    Math.floor(totalHours % 1 * 60),
-                        totalHours: totalHours.toFixed(2),
-                        travelHours: travelHours.toFixed(2),
-                        avgSpeed: avgSpeed
-                    }
-
-                    return data
-                },
-            },
-
-            computed: {
-                travelTime() { return this.calcTravelTime() },
-            },
-
-
-            mounted() {
-                // console.log(this.item, this.distance, this.hoursPerDay)
-            },
-        }
-
-        const RootComponent = {
+        const AppRoot = {
 
             template: getTemplate('template#main'),
 
@@ -327,11 +268,70 @@
 
         }
 
-        createApp(RootComponent)
-        .component('conveyance', ConveyanceComponent)
 
-        .mount('#app')
+        const ConveyanceComponent = {
 
+            template: getTemplate('template#conveyance'), // document.querySelector
+
+            data() {
+                return {
+
+                }
+            },
+
+            props: {
+                item: Object,
+                distance: Number,
+                hoursPerDay: Number,
+            },
+
+            methods: {
+
+                triggerRemove() {
+                    this.$emit('remove', this.item)
+                },
+
+                triggerUpdate() {
+                    this.$emit('update')
+                },
+
+                calcTravelTime() {
+
+                    const avgSpeed      = Number(this.item.avgSpeed)
+                    const hoursPerDay   = Number(this.hoursPerDay)
+                    const distance      = Number(this.distance)
+
+                    const travelHours   = distance / avgSpeed // * (1 + (hoursPerDay / 24))
+                    const totalHours    = travelHours * (24 / hoursPerDay)
+
+                    const data = {
+                        weeks:      Math.floor(totalHours / (24 * 7)),
+                        days:       Math.floor((totalHours / 24) % 7),
+                        hours:      Math.floor(totalHours % 24),
+                        minutes:    Math.floor(totalHours % 1 * 60),
+                        totalHours: totalHours.toFixed(2),
+                        travelHours: travelHours.toFixed(2),
+                        avgSpeed: avgSpeed
+                    }
+
+                    return data
+                },
+            },
+
+            computed: {
+                travelTime() { return this.calcTravelTime() },
+            },
+
+
+            mounted() {
+                // console.log(this.item, this.distance, this.hoursPerDay)
+            },
+        }
+
+
+        createApp(AppRoot)
+            .component('conveyance', ConveyanceComponent)
+            .mount('#app')
 
 
         function getTemplate($el) {
