@@ -6,7 +6,7 @@
     <title>DnD Tools -- Distance to Time Calculator</title>
 
     <meta name="description" content="Converts miles to time for various modes of conveyance factoring in the max number of hours traveled per day." />
-    <meta name="version" content="v0.3" />
+    <meta name="version" content="v0.4" />
 
     <meta name="author" content="bmcminn <https://github.com/bmcminn>" />
 
@@ -26,6 +26,15 @@
         <footer>
             <details class="text-start" id="changelog">
                 <summary>Changelog:</summary>
+
+                <h3>2023-04-19</h3>
+                <ul>
+                    <li>Bump app version to v0.4</li>
+                    <li>Allow for scheduled resting hours</li>
+                    <li>Allow user to force travel hours per day</li>
+                    <li>Cleanup base styles to group helper classes and layout styles</li>
+                </ul>
+
 
                 <h3>2023-04-18</h3>
                 <ul>
@@ -85,17 +94,44 @@
                 >
             </div>
 
+            <div class="flex align-center my--1" style="--flex-gap: 0.5em">
+
+                <div class="form-control">
+                    <label for="hoursPerDay">Travel hours:</label>
+                    <input type="number"
+                        @change="balanceHours"
+                        id="hoursPerDay"
+                        name="hoursPerDay"
+                        min="1"
+                        max="24"
+                        v-model="hoursPerDay"
+                    >
+                    <span v-if="unsafeTravelHours" class="danger-icon" :title="`Traveling for ${hoursPerDay} hours per day is dangerous`">!</span>
+                </div>
+
+                <div class="form-control ml-1">
+                    <label for="forceHoursPerDay">per day:</label>
+                    <input type="checkbox"
+                        @change="balanceHours"
+                        id="forceHoursPerDay"
+                        name="forceHoursPerDay"
+                        v-model="forceHoursPerDay"
+                    >
+                    <span class="info-icon" title="This forces a max travel time per day">?</span>
+                </div>
+            </div>
+
             <div class="form-control">
-                <label for="hoursPerDay">Daily travel hours:</label>
+                <label for="restHours">Rest hours:</label>
                 <input type="number"
-                    @change="cache"
-                    id="hoursPerDay"
-                    name="hoursPerDay"
+                    @change="balanceHours"
+                    id="restHours"
+                    name="restHours"
                     min="0"
-                    max="24"
-                    v-model="hoursPerDay"
+                    :disabled="forceHoursPerDay"
+                    v-model="restHours"
                 >
-                <span v-if="unsafeTravelHours" class="danger-icon" :title="`Traveling for ${hoursPerDay} hours per day is dangerous`">!</span>
+                <span v-if="notRested" class="danger-icon" :title="`Only resting for ${restHours} hours is dangerous`">!</span>
             </div>
 
 
@@ -117,6 +153,7 @@
                         :key="item.key"
                         :item="item"
                         :distance="distance"
+                        :rest-hours="restHours"
                         :hours-per-day="hoursPerDay"
                         @update="onUpdate"
                         @remove="onRemove"
@@ -127,7 +164,7 @@
                 <tfoot>
                     <tr>
                         <td colspan="40" class="text-center py-1">
-                            <button @click="addNewConveyance">Add new conveyance +</button>
+                            <button @click="addNewConveyance">Add new conveyance</button>
                         </td>
                     </tr>
                 </tfoot>
@@ -172,6 +209,7 @@
         </tr>
     </template>
 
+    <script src="../assets/helpers.js"></script>
 
     <script type="module">
         // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
@@ -196,7 +234,9 @@
                     storageKey: 'dndDistanceState',
                     distance: 100,
                     hoursPerDay: 8,
+                    restHours: 8,
                     safeTravelHours: 12,
+                    forceHoursPerDay: false,
                     entries: BASE_ENTRIES,
                 }
             },
@@ -213,8 +253,14 @@
                     this.cache()
                 },
 
-                travelHours(speed) {
-                    timeWalking.travelHours
+
+                balanceHours($e) {
+                    if (this.forceHoursPerDay) {
+                        this.restHours = 24 - this.hoursPerDay
+                    }
+
+                    console.debug('balanceHours', $e)
+                    this.cache()
                 },
 
 
@@ -238,6 +284,8 @@
                     const data = JSON.stringify({
                         distance: this.distance,
                         hoursPerDay: this.hoursPerDay,
+                        restHours: this.restHours,
+                        forceHoursPerDay: this.forceHoursPerDay,
                         entries: this.entries,
                     })
 
@@ -252,15 +300,19 @@
 
             computed: {
                 unsafeTravelHours() { return this.hoursPerDay > this.safeTravelHours },
+                notRested() { return  this.restHours <= 4 },
+                // calcRestingHours() { return this.forceHoursPerDay ? 24 - this.hoursPerDay : this.restHours },
             },
 
             mounted() {
                 const data = this.readCache()
 
                 if (data) {
-                    this.distance       = data.distance ?? 100
-                    this.hoursPerDay    = data.hoursPerDay ?? 12
-                    this.entries        = data.entries ?? BASE_ENTRIES
+                    this.distance           = data.distance ?? this.distance
+                    this.hoursPerDay        = data.hoursPerDay ?? this.hoursPerDay
+                    this.entries            = data.entries ?? BASE_ENTRIES
+                    this.restHours          = data.restHours ?? this.restHours
+                    this.forceHoursPerDay   = data.forceHoursPerDay ?? this.forceHoursPerDay
                 }
             },
 
@@ -281,6 +333,7 @@
                 item: Object,
                 distance: Number,
                 hoursPerDay: Number,
+                restHours: Number,
             },
 
             methods: {
@@ -293,26 +346,84 @@
                     this.$emit('update')
                 },
 
+
                 calcTravelTime() {
+                    const distance      = this.distance
+                    const avgSpeed      = this.item.avgSpeed
+                    const hoursPerDay   = this.hoursPerDay
+                    const restHours     = this.restHours
 
-                    const avgSpeed      = Number(this.item.avgSpeed)
-                    const hoursPerDay   = Number(this.hoursPerDay)
-                    const distance      = Number(this.distance)
+                    // handle error where avgSpeed = 0 results in divide by 0
+                    const zeroDistance = distance === 0
 
-                    const travelHours   = distance / avgSpeed // * (1 + (hoursPerDay / 24))
-                    const totalHours    = travelHours * (24 / hoursPerDay)
+                    if (zeroDistance || avgSpeed === 0) {
+                        const value = zeroDistance ? 0 : Infinity
+
+                        return {
+                            weeks:          value,
+                            days:           value,
+                            hours:          value,
+                            minutes:        value,
+                            totalHours:     value,
+                            travelHours:    value,
+                            restingHours:   value,
+                            travelPath:     [],
+                        }
+                    }
+
+                    const travelHours   = distance / avgSpeed
+
+                    let restingHours    = 0
+                    let travelingHours  = 0
+
+                    const travelPath = []
+
+                    if (travelHours > hoursPerDay) {
+                        travelingHours += travelHours
+                        while (travelingHours - hoursPerDay > 0) {
+                            travelingHours  -= hoursPerDay
+                            restingHours    += restHours
+                            travelPath.push(['travel', hoursPerDay ])
+                            travelPath.push(['rest', restHours])
+                        }
+                    }
+
+                    const totalHours = travelHours + travelingHours + restingHours
+                    travelPath.push(['travel', travelingHours ])
 
                     const data = {
-                        weeks:      Math.floor(totalHours / (24 * 7)),
-                        days:       Math.floor((totalHours / 24) % 7),
-                        hours:      Math.floor(totalHours % 24),
-                        minutes:    Math.floor(totalHours % 1 * 60),
-                        totalHours: totalHours.toFixed(2),
-                        travelHours: travelHours.toFixed(2),
-                        avgSpeed: avgSpeed
+                        weeks:          Math.floor(totalHours / (24 * 7)),
+                        days:           Math.floor((totalHours / 24) % 7),
+                        hours:          Math.floor(totalHours % 24),
+                        minutes:        Math.floor(totalHours % 1 * 60),
+                        totalHours:     Number(totalHours.toFixed(2)),
+                        travelHours:    Number(travelHours.toFixed(2)),
+                        restingHours,
+                        travelPath,
                     }
 
                     return data
+
+                    // const travelHours   = this.distance / this.item.avgSpeed
+
+                    // let restHours   = 0
+                    // let totalHours  = travelHours
+
+                    // while (totalHours - this.hoursPerDay > 0) {
+                    //     totalHours -= this.hoursPerDay
+                    //     restHours +=
+                    // }
+
+                    // const data = {
+                    //     weeks:      Math.floor(totalHours / (24 * 7)),
+                    //     days:       Math.floor((totalHours / 24) % 7),
+                    //     hours:      Math.floor(totalHours % 24),
+                    //     minutes:    Math.floor(totalHours % 1 * 60),
+                    //     totalHours: totalHours.toFixed(2),
+                    //     travelHours: travelHours.toFixed(2),
+                    // }
+
+                    // return data
                 },
             },
 
@@ -331,26 +442,6 @@
             .component('conveyance', ConveyanceComponent)
             .mount('#app')
 
-
-        function getTemplate($el) {
-            return document.querySelector($el).innerHTML
-        }
-
-
-        /**
-         * { function_description }
-         * @sauce   https://www.freecodecamp.org/news/javascript-debounce-example/
-         * @param   {callable}  callback        The callback
-         * @param   {number}    [timeout=300]   The timeout
-         * @return  {callable}                  The resulting debounce handler
-         */
-        function debounce(callback, timeout = 300){
-          let timer;
-          return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => { callback.apply(this, args); }, timeout);
-          };
-        }
     </script>
 
 </body>
