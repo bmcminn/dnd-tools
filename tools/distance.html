@@ -18,7 +18,7 @@
 
     <main>
         <header>
-            <a href="../">back</a>
+            <a href="../">&leftarrow; back</a>
         </header>
 
         <section id="app"></section>
@@ -33,6 +33,8 @@
                     <li>Allow for scheduled resting hours</li>
                     <li>Allow user to force travel hours per day</li>
                     <li>Cleanup base styles to group helper classes and layout styles</li>
+                    <li>Update app layout to center content</li>
+                    <li>Make helper classes to make tables scrollable on mobile</li>
                 </ul>
 
 
@@ -135,40 +137,40 @@
             </div>
 
 
-            <table>
-                <thead>
-                    <th style="min-width: 5em">Conveyance</th>
-                    <th style="min-width: 5em">Avg <abbr title="miles per hour">MPH</abbr></th>
-                    <th style="min-width: 5em">Travel hrs</th>
-                    <th style="min-width: 5em">Weeks</th>
-                    <th style="min-width: 5em">Days</th>
-                    <th style="min-width: 5em">Hours</th>
-                    <th style="min-width: 5em">Minutes</th>
-                    <th style="min-width: 5em">Total hrs</th>
-                </thead>
+            <div class="mw-100 overflowx-auto">
+                <table>
+                    <thead>
+                        <th style="min-width: 7em; width: 7em">Conveyance</th>
+                        <th style="min-width: 5em; width: 5em">Avg <abbr title="miles per hour">MPH</abbr></th>
+                        <th style="">Travel hrs</th>
+                        <th style="">Weeks</th>
+                        <th style="">Days</th>
+                        <th style="">Hours</th>
+                        <th style="">Minutes</th>
+                        <th style="">Total hrs</th>
+                        <th style="width: 1em"></th>
+                    </thead>
 
-                <tbody>
-                    <tr is="vue:conveyance"
-                        v-for="item in entries"
-                        :key="item.key"
-                        :item="item"
-                        :distance="distance"
-                        :rest-hours="restHours"
-                        :hours-per-day="hoursPerDay"
-                        @update="onUpdate"
-                        @remove="onRemove"
-                    >
-                    </tr>
-                </tbody>
+                    <tbody class="">
+                        <tr is="vue:conveyance"
+                            v-for="item in entries"
+                            :key="item.key"
+                            :item="item"
+                            :distance="distance"
+                            :rest-hours="restHours"
+                            :hours-per-day="hoursPerDay"
+                            @update="onUpdate"
+                            @remove="onRemove"
+                        >
+                        </tr>
+                    </tbody>
 
-                <tfoot>
-                    <tr>
-                        <td colspan="40" class="text-center py-1">
-                            <button @click="addNewConveyance">Add new conveyance</button>
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
+                </table>
+            </div>
+
+            <div class="text-center my-1">
+                <button @click="addNewConveyance">Add new conveyance</button>
+            </div>
 
         </div>
     </template>
@@ -205,7 +207,7 @@
             <td class="text-end">{{ travelTime.minutes }}</td>
             <td class="text-end">{{ travelTime.totalHours }}</td>
 
-            <td><button @click="triggerRemove" aria-label="Remove item">&times;</button></td>
+            <td class="text-center"><button @click="triggerRemove" aria-label="Remove item">&times;</button></td>
         </tr>
     </template>
 

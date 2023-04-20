@@ -46,18 +46,32 @@
 .my-2 { margin-top: 2em; margin-bottom: 2em }
 
 
+.mw-100 { max-width: 100%; width: 100% }
+
+.overflow-auto { overflow: auto }
+.overflowx-auto { overflow-x: auto }
+.overflowy-auto { overflow-y: auto }
+
 /**
  * LAYOUT STYLES
  **/
 
 main {
     padding: 1em;
+    margin: auto;
+    max-width: 60em;
 }
 
 hr {
     border: 1px solid #e3e3e3;
     color: #e3e3e3;
     margin: 1em 0;
+}
+
+table {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 thead  { font-weight: bold }
