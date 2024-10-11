@@ -25,7 +25,7 @@ const entries = normalizeEntries(fs.readFileSync(`./${process.argv[2]}`, 'utf-8'
  * @param      {string}  value   The value
  * @return     {<type>}  { description_of_the_return_value }
  */
-function empty(value) {
+function isEmpty(value) {
     const testType = typeof value
 
     const isArray  = Array.isArray(value)
@@ -53,7 +53,7 @@ function normalizeEntries(content) {
 
             el = el.trim()
 
-            if (el.startsWith('//') || empty(el)) { return false }
+            if (el.startsWith('//') || isEmpty(el)) { return false }
 
             return el
                 .split(',')

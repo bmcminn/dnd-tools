@@ -18,3 +18,30 @@ function debounce(callback, timeout = 300){
         timer = setTimeout(() => { callback.apply(this, args); }, timeout);
     };
 }
+
+
+/**
+ * { function_description }
+ *
+ * @param      {string}  value   The value
+ * @return     {<type>}  { description_of_the_return_value }
+ */
+function isEmpty(value) {
+    const testType = typeof value
+
+    const isArray  = Array.isArray(value)
+    const isString = typeof value === 'string'
+
+    if (!isArray && !isString) { return null }
+
+    if (isString) {
+        value = value.trim()
+    }
+
+    return value.length === 0
+}
+
+
+function isNaN(value) {
+    return Number.isNaN(value)
+}

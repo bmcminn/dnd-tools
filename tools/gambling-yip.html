@@ -6,12 +6,22 @@
     <title>DnD Tools -- Gambling -- Yip</title>
 
     <meta name="description" content="Tabulate your wins and losses for the game of Yip." />
-    <meta name="version" content="v0.1" />
+    <meta name="version" content="v0.2" />
 
     <meta name="author" content="bmcminn <https://github.com/bmcminn>" />
 
     <link rel="stylesheet" href="../assets/normalize.css">
     <link rel="stylesheet" href="../assets/styles.css">
+
+    <style>
+        * + * {
+            box-sizing: border-box !important;
+        }
+        textarea {
+            width: 100%;
+            padding: 0.5em;
+        }
+    </style>
 
 </head> <body>
 
@@ -39,18 +49,17 @@
     </main>
 
 
-    <template id="main">
+    <template id="yipgame">
         <h1>{{ title }} {{version}}</h1>
 
         <p class="description">
             {{ description }}
         </p>
 
-
         <h2>Rules</h2>
 
         <ul>
-            <li>Minimum 5gp buyin</li>
+            <li>Minimum 5gp buy-in</li>
             <li>Roll <code>2d6</code></li>
             <li>If your dice add up to 7 or 12, you win your bet 2x</li>
             <li>If not, you can double your bet to add <code>1d6</code> to the total.</li>
@@ -62,76 +71,46 @@
 
 
         <div>
-            <div class="mw-100 overflowx-auto">
-                <table>
-                    <thead>
-                        <th style="">Dice 1</th>
-                        <th style="">Dice 2</th>
-                        <th style="">Dice 3 (double your bet)</th>
-                        <th style="">Win/Loss</th>
-                    </thead>
-
-                    <tbody class="">
-                        <!--
-                        <tr is="vue:round"
-                            v-for="entry in entries"
-                            :key="entry.key"
-                            :entry="entry"
-                            @update="onUpdate"
-                            @remove="onRemove"
-                        >
-                        -->
-                        <tr v-for="entry of entries">
-                            <td>{{ entry[0] }}</td>
-                            <td>{{ entry[1] }}</td>
-                            <td>{{ entry[2] }}</td>
-                        </tr>
-                    </tbody>
-
-                </table>
+            <div class="field">
+                <label for="rounds">Rounds</label>
+                <textarea
+                    name="rounds"
+                    id="rounds"
+                    v-model="entries"
+                    rows="10"
+                ></textarea>
             </div>
 
-            <div class="text-center my-1">
-                <button @click="addNewConveyance">Add new conveyance</button>
-            </div>
+            <table>
+                <thead>
+                    <th>Round</th>
+                    <th>Wager</th>
+                    <th>Die 1</th>
+                    <th>Die 2</th>
+                    <th>Double?</th>
+                    <th>Total</th>
+                    <th>Result</th>
+                    <th>Tally</th>
+                </thead>
+
+                <tbody>
+                    <tr v-for="(entry, index) in tabulations">
+                        <th>{{ index + 1 }}</th>
+                        <th v-if="entry.sum">{{ entry.wager }}gp</th>
+                        <th v-if="!entry.sum">{{ entry.wager }}</th>
+                        <th>{{ entry.d1 }}</th>
+                        <th>{{ entry.d2 }}</th>
+                        <th>{{ entry.d3 === 0 ? '' : entry.d3 }}</th>
+                        <th>{{ entry.sum }}</th>
+                        <th v-if="entry.sum">{{ entry.result > 0 ? 'win' : 'lose' }} {{ entry.result }}gp</th>
+                        <th v-if="!entry.sum">{{ entry.result }}</th>
+                        <th>{{ entry.tally }}</th>
+                    </tr>
+                </tbody>
+
+            </table>
 
         </div>
-    </template>
-
-
-    <template id="round">
-        <tr>
-            <td>
-                <label class="visually-hidden" :for="`${item.label}Label`">Label:</label>
-                <input type="text"
-                    @change="triggerUpdate"
-                    :name="`${item.label}Label`"
-                    :id="`${item.label}Label`"
-                    v-model="item.label"
-                >
-            </td>
-
-            <td>
-                <label class="visually-hidden" :for="`avg${item.label}Speed`">Avg {{ item.label }} Speed (mph):</label>
-                <input type="number"
-                    @change="triggerUpdate"
-                    :name="`avg${item.label}Speed`"
-                    :id="`avg${item.label}Speed`"
-                    min="0"
-                    step="0.5"
-                    v-model="item.avgSpeed"
-                >
-            </td>
-
-            <td class="text-end">{{ travelTime.travelHours }}</td>
-            <td class="text-end">{{ travelTime.weeks }}</td>
-            <td class="text-end">{{ travelTime.days }}</td>
-            <td class="text-end">{{ travelTime.hours }}</td>
-            <td class="text-end">{{ travelTime.minutes }}</td>
-            <td class="text-end">{{ travelTime.totalHours }}</td>
-
-            <td class="text-center"><button @click="triggerRemove" aria-label="Remove item">&times;</button></td>
-        </tr>
     </template>
 
     <script src="../assets/helpers.js"></script>
@@ -141,43 +120,9 @@
         import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
 
-        const entries = [
-            [ 4,6,5 ],
-            [ 3,3,4 ],
-            [ 6,6 ],
-            [ 6,5,4 ],
-            [ 5,5,5 ],
-            [ 5,6,4 ],
-            [ 5,2 ],
-        ].map(el => {
+        createApp({
 
-            if (!el[2]) {
-                el[2] = 0
-            }
-
-            const [ a, b, c ] = el
-
-            let sum = el.reduce((a, b) => a + b)
-
-            console.log({sum})
-
-            if (sum === 7 || sum === 12) {
-                el[3] = true
-            }
-
-            if (c) {
-
-            }
-
-
-
-            return el
-        })
-
-
-        const AppRoot = {
-
-            template: getTemplate('template#main'),
+            template: getTemplate('template#yipgame'),
 
             data() {
                 return {
@@ -185,20 +130,15 @@
                     version: document.querySelector('meta[name="version"]').content,
                     description: document.querySelector('meta[name="description"]').content,
                     storageKey: 'dndGamblingYip',
-                    entries,
+                    entries: [
+                        '5 1 7 x',
+                        '5 2 3 x',
+                        '5 6 6',
+                    ].join('\n'),
                 }
             },
 
             methods: {
-
-                onRemove(entry) {
-                    console.log('remove', entry)
-
-                    // delete this.entries[index]
-
-                    this.cache()
-                },
-
 
                 onUpdate($e, entry) {
                     console.log('onUpdate', entry)
@@ -226,7 +166,37 @@
             },
 
             computed: {
-                // calcRestingHours() { return this.forceHoursPerDay ? 24 - this.hoursPerDay : this.restHours },
+                tabulations() {
+                    this.tally = 0
+
+                    const _self = this
+
+                    const entries = normalizeEntries(this.entries)
+                        .map(entry => {
+
+                            const { wager, d1, d2, d3, result } = entry
+
+                            if (entry.result) { return entry }
+
+                            entry.sum = d1 + d2 + d3
+
+                            const doubled = !!d3 ? 2 : 1
+
+                            if ([7, 12].some(el => (entry.sum) === el)) {
+                                entry.result = entry.wager * 2 * doubled // 'win'
+                            } else {
+                                entry.result = entry.wager * -1 * doubled // 'loss'
+                            }
+
+                            _self.tally += entry.result
+
+                            entry.tally = _self.tally
+
+                            return entry
+                        })
+
+                    return entries
+                },
             },
 
             mounted() {
@@ -234,48 +204,43 @@
 
             },
 
-        }
-
-
-        const EntryComponent = {
-
-            template: getTemplate('template#round'), // document.querySelector
-
-            data() {
-                return {
-
-                }
-            },
-
-            props: {
-            },
-
-            methods: {
-
-                triggerRemove() {
-                    this.$emit('remove', this.item)
-                },
-
-                triggerUpdate() {
-                    this.$emit('update')
-                },
-
-            },
-
-            computed: {
-                travelTime() { return this.calcTravelTime() },
-            },
-
-
-            mounted() {
-                // console.log(this.item, this.distance, this.hoursPerDay)
-            },
-        }
-
-
-        createApp(AppRoot)
-            .component('round', EntryComponent)
+        })
+            // .component('round', EntryComponent)
             .mount('#app')
+
+
+        function normalizeEntries(content, seperator=' ') {
+            return content
+                .split('\n')
+                .map(entry => {
+
+                    entry = entry.trim()
+
+                    if (entry.startsWith('//') || isEmpty(entry)) { return false }
+
+                    entry = entry.replace(/\s+/gi, seperator).split(seperator)
+
+                    if (!isValidEntry(entry)) {
+                        return { result: 'invalid entry' }
+                    }
+
+                    const [ wager, d1, d2, d3 ] = entry
+
+                    return {
+                        wager: Number(wager),
+                        d1: Number(d1),
+                        d2: Number(d2),
+                        d3: Number(d3 ?? null),
+                    }
+                })
+                .filter(entry => !!entry)
+        }
+
+        function isValidEntry(entry) {
+            return entry.every((el, i) => {
+                return !isNaN(Number(el))
+            })
+        }
 
     </script>
 
