@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DnD Tools -- Gambling -- Yip</title>
+
+    <meta name="description" content="Tabulate your wins and losses for the game of Yip." />
+    <meta name="version" content="v0.1" />
+
+    <meta name="author" content="bmcminn <https://github.com/bmcminn>" />
+
+    <link rel="stylesheet" href="../assets/normalize.css">
+    <link rel="stylesheet" href="../assets/styles.css">
+
+</head> <body>
+
+    <main>
+        <header>
+            <a href="../">&leftarrow; back</a>
+        </header>
+
+        <section id="app"></section>
+
+        <footer>
+            <details class="text-start" id="changelog">
+                <summary>Changelog:</summary>
+
+                <h3>2023-04-16</h3>
+                <ul>
+                    <li>Initial App setup; v0.1</li>
+                </ul>
+            </details>
+
+            <p class="text-center">
+                Source repo: <a href="https://github.com/bmcminn/dnd-tools">https://github.com/bmcminn/dnd-tools</a>
+            </p>
+        </footer>
+    </main>
+
+
+    <template id="main">
+        <h1>{{ title }} {{version}}</h1>
+
+        <p class="description">
+            {{ description }}
+        </p>
+
+
+        <h2>Rules</h2>
+
+        <ul>
+            <li>Minimum 5gp buyin</li>
+            <li>Roll <code>2d6</code></li>
+            <li>If your dice add up to 7 or 12, you win your bet 2x</li>
+            <li>If not, you can double your bet to add <code>1d6</code> to the total.</li>
+            <li>Payout for winning players is 3:2.</li>
+        </ul>
+
+
+        <hr>
+
+
+        <div>
+            <div class="mw-100 overflowx-auto">
+                <table>
+                    <thead>
+                        <th style="">Dice 1</th>
+                        <th style="">Dice 2</th>
+                        <th style="">Dice 3 (double your bet)</th>
+                        <th style="">Win/Loss</th>
+                    </thead>
+
+                    <tbody class="">
+                        <!--
+                        <tr is="vue:round"
+                            v-for="entry in entries"
+                            :key="entry.key"
+                            :entry="entry"
+                            @update="onUpdate"
+                            @remove="onRemove"
+                        >
+                        -->
+                        <tr v-for="entry of entries">
+                            <td>{{ entry[0] }}</td>
+                            <td>{{ entry[1] }}</td>
+                            <td>{{ entry[2] }}</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <div class="text-center my-1">
+                <button @click="addNewConveyance">Add new conveyance</button>
+            </div>
+
+        </div>
+    </template>
+
+
+    <template id="round">
+        <tr>
+            <td>
+                <label class="visually-hidden" :for="`${item.label}Label`">Label:</label>
+                <input type="text"
+                    @change="triggerUpdate"
+                    :name="`${item.label}Label`"
+                    :id="`${item.label}Label`"
+                    v-model="item.label"
+                >
+            </td>
+
+            <td>
+                <label class="visually-hidden" :for="`avg${item.label}Speed`">Avg {{ item.label }} Speed (mph):</label>
+                <input type="number"
+                    @change="triggerUpdate"
+                    :name="`avg${item.label}Speed`"
+                    :id="`avg${item.label}Speed`"
+                    min="0"
+                    step="0.5"
+                    v-model="item.avgSpeed"
+                >
+            </td>
+
+            <td class="text-end">{{ travelTime.travelHours }}</td>
+            <td class="text-end">{{ travelTime.weeks }}</td>
+            <td class="text-end">{{ travelTime.days }}</td>
+            <td class="text-end">{{ travelTime.hours }}</td>
+            <td class="text-end">{{ travelTime.minutes }}</td>
+            <td class="text-end">{{ travelTime.totalHours }}</td>
+
+            <td class="text-center"><button @click="triggerRemove" aria-label="Remove item">&times;</button></td>
+        </tr>
+    </template>
+
+    <script src="../assets/helpers.js"></script>
+
+    <script type="module">
+        // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+
+        const entries = [
+            [ 4,6,5 ],
+            [ 3,3,4 ],
+            [ 6,6 ],
+            [ 6,5,4 ],
+            [ 5,5,5 ],
+            [ 5,6,4 ],
+            [ 5,2 ],
+        ].map(el => {
+
+            if (!el[2]) {
+                el[2] = 0
+            }
+
+            const [ a, b, c ] = el
+
+            let sum = el.reduce((a, b) => a + b)
+
+            console.log({sum})
+
+            if (sum === 7 || sum === 12) {
+                el[3] = true
+            }
+
+            if (c) {
+
+            }
+
+
+
+            return el
+        })
+
+
+        const AppRoot = {
+
+            template: getTemplate('template#main'),
+
+            data() {
+                return {
+                    title: document.querySelector('title').innerText,
+                    version: document.querySelector('meta[name="version"]').content,
+                    description: document.querySelector('meta[name="description"]').content,
+                    storageKey: 'dndGamblingYip',
+                    entries,
+                }
+            },
+
+            methods: {
+
+                onRemove(entry) {
+                    console.log('remove', entry)
+
+                    // delete this.entries[index]
+
+                    this.cache()
+                },
+
+
+                onUpdate($e, entry) {
+                    console.log('onUpdate', entry)
+
+                    this.cache()
+                },
+
+
+                cache() {
+                    const data = JSON.stringify({
+                        // distance: this.distance,
+                        // hoursPerDay: this.hoursPerDay,
+                        // restHours: this.restHours,
+                        // forceHoursPerDay: this.forceHoursPerDay,
+                        // entries: this.entries,
+                    })
+
+                    localStorage.setItem(this.storageKey, data)
+                },
+
+                readCache() {
+                    return JSON.parse(localStorage.getItem(this.storageKey))
+                },
+
+            },
+
+            computed: {
+                // calcRestingHours() { return this.forceHoursPerDay ? 24 - this.hoursPerDay : this.restHours },
+            },
+
+            mounted() {
+                const data = this.readCache()
+
+            },
+
+        }
+
+
+        const EntryComponent = {
+
+            template: getTemplate('template#round'), // document.querySelector
+
+            data() {
+                return {
+
+                }
+            },
+
+            props: {
+            },
+
+            methods: {
+
+                triggerRemove() {
+                    this.$emit('remove', this.item)
+                },
+
+                triggerUpdate() {
+                    this.$emit('update')
+                },
+
+            },
+
+            computed: {
+                travelTime() { return this.calcTravelTime() },
+            },
+
+
+            mounted() {
+                // console.log(this.item, this.distance, this.hoursPerDay)
+            },
+        }
+
+
+        createApp(AppRoot)
+            .component('round', EntryComponent)
+            .mount('#app')
+
+    </script>
+
+</body>
+</html>
