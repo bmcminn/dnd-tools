@@ -97,14 +97,15 @@
                     <tr v-for="(entry, index) in tabulations">
                         <th>{{ index + 1 }}</th>
                         <th v-if="entry.sum">{{ entry.wager }}gp</th>
-                        <th v-if="!entry.sum">{{ entry.wager }}</th>
+                        <th v-if="!entry.sum"></th>
                         <th>{{ entry.d1 }}</th>
                         <th>{{ entry.d2 }}</th>
                         <th>{{ entry.d3 === 0 ? '' : entry.d3 }}</th>
                         <th>{{ entry.sum }}</th>
                         <th v-if="entry.sum">{{ entry.result > 0 ? 'win' : 'lose' }} {{ entry.result }}gp</th>
                         <th v-if="!entry.sum">{{ entry.result }}</th>
-                        <th>{{ entry.tally }}</th>
+                        <th v-if="entry.sum">{{ entry.tally }}gp</th>
+                        <th v-if="!entry.sum"></th>
                     </tr>
                 </tbody>
 
